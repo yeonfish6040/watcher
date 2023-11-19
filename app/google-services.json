@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "803278649277",
+    "project_id": "androidmanager-9c842",
+    "storage_bucket": "androidmanager-9c842.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:803278649277:android:579da75e038c10a06944d4",
+        "android_client_info": {
+          "package_name": "com.yeonfish.watcher"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "803278649277-3bd49vet0jlu6r3q21g44csguprm173f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApBFNMiFhniAdh21pKV1KeQkW-WTj3hqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "803278649277-3bd49vet0jlu6r3q21g44csguprm173f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:803278649277:android:ed959f49d4cf4a9e6944d4",
+        "android_client_info": {
+          "package_name": "kr.co.android_manager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "803278649277-pmsqhf367611j7dn7arq2dja0j1scri5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "kr.co.android_manager",
+            "certificate_hash": "c05d55ba076f9eedca588728478ad969a3135fdd"
+          }
+        },
+        {
+          "client_id": "803278649277-3bd49vet0jlu6r3q21g44csguprm173f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApBFNMiFhniAdh21pKV1KeQkW-WTj3hqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "803278649277-3bd49vet0jlu6r3q21g44csguprm173f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
