@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation("com.android.support:support-compat:28.0.0")
     implementation("com.google.firebase:firebase-analytics")
+    implementation("androidx.work:work-runtime:2.8.0")
     implementation(platform("com.google.firebase:firebase-bom:32.5.0"))
     implementation(files("libs/mysql-connector-java-5.1.49.jar"))
     testImplementation(libs.junit)
