@@ -12,14 +12,18 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.yeonfish.watcher.services.FCMService;
-import com.yeonfish.watcher.services.JobService;
+import com.yeonfish.watcher.services.WorkManagerService;
 import com.yeonfish.watcher.util.sql.SQLQuery;
 import com.yeonfish.watcher.util.sql.SQLResults;
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,30 +37,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void scheduleJob(){
-        ComponentName componentName = new ComponentName(this, JobService.class);
+        WorkRequest wr =
+                new PeriodicWorkRequest.Builder(WorkManagerService.class, 15, TimeUnit.MINUTES)
+                        .build();
+        WorkManager.getInstance().enqueue(wr);
 
-        JobInfo info = new JobInfo.Builder(123, componentName)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)//네트워크 상태 설정
-                .setPersisted(true)
-                .setPeriodic(15 * 60 * 1000) //15분(주기적) 최소기준이 15분(1000 = 1초)
-//                .setMinimumLatency(5000)
-                .build();
-
-        //setPeriodic 부팅 후 작업 실행여부설정 RECEIVE_BOOT_COMPLETED 권한설정해야함
-        //setMinimumLatency(TimeUnit.MINUTES.toMillis(1))1분 //얼마후에 실행되어야 하는지(한번만)
-        //NETWORK_TYPE_UNMETERED WIFI
-        //NETWORK_TYPE_CELLULAR 셀룰러
-        //NETWORK_TYPE_ANY 언제든
-        //NETWORK_TYPE_NONE 인터넷 연결 안되었을때
-
-        JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
-
-        int resultCode = jobScheduler.schedule(info);
-        if(resultCode == jobScheduler.RESULT_SUCCESS){
-            Log.d(TAG, "작업 성공");
-        }else{
-            Log.d(TAG, "작업 실패");
-        }
+//        int resultCode = jobScheduler.schedule(info);
+//        if(resultCode == jobScheduler.RESULT_SUCCESS){
+//            Log.d(TAG, "작업 성공");
+//        }else{
+//            Log.d(TAG, "작업 실패");
+//        }
 
         FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
             @Override

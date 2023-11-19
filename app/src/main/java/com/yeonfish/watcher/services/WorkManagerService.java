@@ -15,44 +15,45 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 import com.yeonfish.watcher.util.sql.SQLQuery;
 import com.yeonfish.watcher.util.sql.SQLResults;
 
-public class JobService extends android.app.job.JobService {
-    final String TAG = "JobService";
+import java.util.function.Consumer;
 
-    @Override
-    public boolean onStartJob(JobParameters params) {
-        Log.d(TAG, "onStartJob: ${params.jobId}");
+public class WorkManagerService extends Worker {
+    final String TAG = "WorkManagerService";
 
-        doBackgroundWork(params);
-
-        return true;
+    public WorkManagerService(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
     }
 
+    @NonNull
     @Override
-    public boolean onStopJob(JobParameters params) {
-        Log.d(TAG, "onStopJob: ${params.jobId}");
-        return true;
+    public Result doWork() {
+
+        doBackgroundWork();
+
+        return Result.success();
     }
 
-    private void doBackgroundWork(final JobParameters params) {
-        LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    private void doBackgroundWork() {
+        LocationManager manager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         Criteria criteria = new Criteria();
 //        String bestProvider = String.valueOf(manager.getBestProvider(criteria, true)).toString();
         String bestProvider = LocationManager.GPS_PROVIDER;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        manager.requestLocationUpdates(bestProvider, 1000L, (float) 0, new LocationListener() {
+        manager.getCurrentLocation(bestProvider, null, getApplicationContext().getMainExecutor(), new Consumer<Location>() {
             @Override
-            public void onLocationChanged(@NonNull Location location) {
+            public void accept(Location location) {
                 updatePos(location);
             }
         });
         Log.d(TAG, "Job finished");
-        jobFinished(params, false);
     }
 
     protected void updatePos(Location location) {
@@ -62,7 +63,7 @@ public class JobService extends android.app.job.JobService {
         new Thread(() -> {
             SQLQuery sqlQuery = new SQLQuery("lyj.kr", "3306", "android", "f60ed56a9c8275894022fe5a7a1625c33bdb55b729bb4e38962af4d1613eda25", "android");
             if (!sqlQuery.cStatus()) {
-                toastOnThread(JobService.this, "Fail1", Toast.LENGTH_LONG);
+                toastOnThread(getApplicationContext(), "Fail1", Toast.LENGTH_LONG);
                 return;
             }
             SQLResults results = null;
@@ -71,7 +72,7 @@ public class JobService extends android.app.job.JobService {
                 sqlQuery.delete("MyPos", "`time` < "+String.valueOf(System.currentTimeMillis()-7200000));
                 sqlQuery.insert("MyPos", param);
             } catch (Exception e) {
-                toastOnThread(JobService.this, "Fail2", Toast.LENGTH_LONG);
+                toastOnThread(getApplicationContext(), "Fail2", Toast.LENGTH_LONG);
                 throw new RuntimeException(e);
             }
         }).start();
