@@ -54,9 +54,6 @@ public class FCMService extends FirebaseMessagingService {
         super.onMessageReceived(remoteMessage);
 
         Map<String, String> data = remoteMessage.getData();
-
-        Log.d("FCM", data.toString());
-
         if (remoteMessage == null) return;
 
         if (data.get("event").equals("notification")) {
