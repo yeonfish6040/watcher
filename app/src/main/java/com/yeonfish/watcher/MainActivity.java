@@ -1,7 +1,10 @@
 package com.yeonfish.watcher;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
@@ -12,11 +15,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.yeonfish.watcher.services.FCMService;
 import com.yeonfish.watcher.services.JobService;
 import com.yeonfish.watcher.util.sql.SQLQuery;
 import com.yeonfish.watcher.util.sql.SQLResults;
@@ -29,7 +32,23 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (!(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == 0 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == 0  && ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == 0)) {
+            String[] permissions = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.POST_NOTIFICATIONS };
+            ActivityCompat.requestPermissions(this, permissions, 1);
+        }
+
         scheduleJob();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, 1);
+            }
+        }
     }
 
     public void scheduleJob(){
@@ -39,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)//네트워크 상태 설정
                 .setPersisted(true)
                 .setPeriodic(15 * 60 * 1000) //15분(주기적) 최소기준이 15분(1000 = 1초)
-//                .setMinimumLatency(5000)
                 .build();
 
         //setPeriodic 부팅 후 작업 실행여부설정 RECEIVE_BOOT_COMPLETED 권한설정해야함

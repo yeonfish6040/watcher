@@ -1,6 +1,7 @@
 package com.yeonfish.watcher.services;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.job.JobParameters;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -16,46 +17,58 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.CancellationToken;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnTokenCanceledListener;
+import com.yeonfish.watcher.MainActivity;
 import com.yeonfish.watcher.util.sql.SQLQuery;
 import com.yeonfish.watcher.util.sql.SQLResults;
 
 public class JobService extends android.app.job.JobService {
     final String TAG = "JobService";
 
+    FusedLocationProviderClient locationProviderClient;
+
     @Override
     public boolean onStartJob(JobParameters params) {
-        Log.d(TAG, "onStartJob: ${params.jobId}");
+        Log.d(TAG, "onStartJob: " + params.getJobId());
 
-        doBackgroundWork(params);
+        // initalize location provider
+        locationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == 0 || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == 0) {
+            locationProviderClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, new CancellationToken() {
+                @NonNull
+                @Override
+                public CancellationToken onCanceledRequested(@NonNull OnTokenCanceledListener onTokenCanceledListener) {
+                    return null;
+                }
+
+                @Override
+                public boolean isCancellationRequested() {
+                    return false;
+                }
+            }).addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    uploadPos(location);
+                }
+            });
+        }
 
         return true;
     }
 
     @Override
     public boolean onStopJob(JobParameters params) {
-        Log.d(TAG, "onStopJob: ${params.jobId}");
+        Log.d(TAG, "onStopJob: "+params.getJobId());
         return true;
     }
 
-    private void doBackgroundWork(final JobParameters params) {
-        LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-//        String bestProvider = String.valueOf(manager.getBestProvider(criteria, true)).toString();
-        String bestProvider = LocationManager.GPS_PROVIDER;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        manager.requestLocationUpdates(bestProvider, 1000L, (float) 0, new LocationListener() {
-            @Override
-            public void onLocationChanged(@NonNull Location location) {
-                updatePos(location);
-            }
-        });
-        Log.d(TAG, "Job finished");
-        jobFinished(params, false);
-    }
-
-    protected void updatePos(Location location) {
+    protected void uploadPos(Location location) {
         Log.e("TAG", "GPS is on");
         Double latitude = location.getLatitude();
         Double longitude = location.getLongitude();

@@ -88,10 +88,9 @@ public class FCMService extends FirebaseMessagingService {
                     .setAutoCancel(true);
 
             Notification notification = builder.build();
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                return;
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == 0) {
+                notificationManager.notify(1, notification);
             }
-            notificationManager.notify(1, notification);
         }else if (data.get("event").equals("ringing")) {
 
         }
